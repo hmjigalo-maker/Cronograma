@@ -1,0 +1,447 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--c-blue-bg:#E6F1FB;--c-blue-mid:#378ADD;--c-blue-dark:#0C447C;--c-amber-bg:#FAEEDA;--c-amber-mid:#EF9F27;--c-amber-dark:#633806;--c-green-bg:#EAF3DE;--c-green-mid:#639922;--c-green-dark:#27500A;--c-red-bg:#FCEBEB;--c-red-mid:#E24B4A;--c-red-dark:#791F1F;--c-purple-bg:#EEEDFE;--c-purple-mid:#7F77DD;--c-purple-dark:#3C3489}
+body{font-family:var(--font-sans,'system-ui',sans-serif);font-size:14px;color:var(--color-text-primary)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+.wrap{padding:.75rem 0 2rem}
+
+.top-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:1rem}
+.top-bar h1{font-size:17px;font-weight:500;color:var(--color-text-primary);flex:1;min-width:140px}
+.top-bar-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-secondary);padding:3px 8px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+.nav-row{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.nav-row .nav-title{font-size:15px;font-weight:500;flex:1;text-align:center;min-width:160px}
+.nav-row select{font-size:13px;max-width:130px}
+.nav-row .nav-selects{display:flex;gap:6px;align-items:center}
+
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
+.cal-dh{text-align:center;font-size:11px;font-weight:500;color:var(--color-text-secondary);padding:5px 2px;background:var(--color-background-secondary);border-radius:4px}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.week-sep{grid-column:1/-1;height:1px;background:var(--color-border-tertiary);margin:2px 0}
+
+.day-cell{min-height:80px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:4px;background:var(--color-background-primary);cursor:pointer;transition:border-color .15s,background .15s;overflow:hidden}
+.day-cell:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.day-cell.today{border-color:#378ADD}
+.day-cell.empty{background:transparent;border:none;pointer-events:none;min-height:80px}
+
+.day-num{font-size:11px;font-weight:500;color:var(--color-text-secondary);width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-bottom:2px}
+.day-cell.today .day-num{background:#378ADD;color:#fff}
+
+.chip{font-size:10px;line-height:1.3;padding:2px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;display:block;border:0.5px solid transparent}
+.more-chip{font-size:10px;color:var(--color-text-tertiary);padding:1px 4px}
+
+.act-list-section{margin-top:1.5rem}
+.act-list-title{font-size:14px;font-weight:500;margin-bottom:.6rem;color:var(--color-text-primary)}
+.act-list-empty{font-size:13px;color:var(--color-text-secondary);padding:.5rem 0}
+.act-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;margin-bottom:5px;background:var(--color-background-primary)}
+.act-row-info{flex:1;min-width:0}
+.act-row-name{font-size:13px;font-weight:500;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-row-meta{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.act-row-badge{font-size:11px;padding:2px 7px;border-radius:12px;white-space:nowrap;flex-shrink:0}
+.act-row-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.act-row-btn{background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-secondary);padding:2px 4px;border-radius:4px;line-height:1}
+.act-row-btn:hover{color:var(--color-text-primary);background:var(--color-background-secondary)}
+
+.modal-wrap{position:relative;min-height:560px}
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-start;justify-content:center;padding-top:20px;z-index:20;border-radius:12px}
+.modal{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1.25rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.modal-head h2{font-size:15px;font-weight:500}
+.modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--color-text-secondary);padding:2px;border-radius:4px;line-height:1}
+.modal-close:hover{color:var(--color-text-primary)}
+
+.field{margin-bottom:.85rem}
+.field label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;font-size:13px}
+.field textarea{resize:vertical;min-height:56px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.days-picker{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:2px}
+.day-btn{padding:6px 2px;font-size:11px;font-weight:500;border:0.5px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;text-align:center;transition:all .15s}
+.day-btn.active{background:#378ADD;color:#fff;border-color:#378ADD}
+.day-btn:hover:not(.active){background:var(--color-background-secondary)}
+
+.recurrence-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.rec-btn{font-size:11px;padding:4px 10px;border:0.5px solid var(--color-border-secondary);border-radius:20px;background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.rec-btn.active{background:#378ADD;color:#fff;border-color:#378ADD}
+
+.modal-footer{display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;flex-wrap:wrap}
+.modal-footer button{font-size:13px}
+.btn-danger{color:var(--c-red-dark)!important;border-color:var(--c-red-mid)!important}
+.btn-danger:hover{background:var(--c-red-bg)!important}
+
+.stat-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-bottom:1rem}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.6rem .75rem;text-align:center}
+.stat-n{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.stat-l{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+
+@media(max-width:500px){
+  .field-row{grid-template-columns:1fr}
+  .nav-row .nav-selects{display:none}
+  .days-picker{grid-template-columns:repeat(7,1fr)}
+  .day-btn{font-size:10px;padding:5px 1px}
+  .cal-dh{font-size:10px}
+  .chip{font-size:9px}
+}
+</style>
+
+<h2 class="sr-only">Cronograma de actividades con horarios y días recurrentes</h2>
+
+<div class="wrap" id="app">
+
+<div class="top-bar">
+  <h1><i class="ti ti-calendar" aria-hidden="true" style="font-size:18px;vertical-align:-2px;margin-right:6px"></i>Cronograma</h1>
+  <div class="top-bar-actions">
+    <select id="filterStatus" style="font-size:12px;max-width:130px">
+      <option value="">Todos los estados</option>
+      <option value="pending">Pendiente</option>
+      <option value="inprogress">En progreso</option>
+      <option value="done">Completado</option>
+      <option value="cancelled">Cancelado</option>
+      <option value="review">En revisión</option>
+    </select>
+    <button id="addBtn"><i class="ti ti-plus" aria-hidden="true"></i> Nueva</button>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>Pendiente</span>
+  <span class="leg"><span class="leg-dot" style="background:#EF9F27"></span>En progreso</span>
+  <span class="leg"><span class="leg-dot" style="background:#639922"></span>Completado</span>
+  <span class="leg"><span class="leg-dot" style="background:#E24B4A"></span>Cancelado</span>
+  <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>En revisión</span>
+</div>
+
+<div class="stat-bar" id="statBar"></div>
+
+<div class="nav-row">
+  <button id="prevBtn" aria-label="Mes anterior"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+  <span class="nav-title" id="navTitle"></span>
+  <button id="nextBtn" aria-label="Mes siguiente"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+  <div class="nav-selects">
+    <select id="monthSel"></select>
+    <select id="yearSel"></select>
+  </div>
+  <button id="todayBtn" style="font-size:12px">Hoy</button>
+</div>
+
+<div class="modal-wrap" id="mainContent">
+  <div class="cal-header" id="calHeader"></div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="act-list-section">
+    <div class="act-list-title" id="listTitle"></div>
+    <div id="actList"></div>
+  </div>
+  <div class="modal-overlay" id="modalOverlay" style="display:none">
+    <div class="modal" id="modal">
+      <div class="modal-head">
+        <h2 id="modalTitle">Nueva actividad</h2>
+        <button class="modal-close" id="closeModal" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="field">
+        <label>Nombre de la actividad</label>
+        <input type="text" id="fName" placeholder="Ej: Reunión de equipo" />
+      </div>
+
+      <div class="field">
+        <label>Descripción (opcional)</label>
+        <textarea id="fDesc" placeholder="Detalles..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select id="fStatus">
+          <option value="pending">Pendiente</option>
+          <option value="inprogress">En progreso</option>
+          <option value="done">Completado</option>
+          <option value="cancelled">Cancelado</option>
+          <option value="review">En revisión</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fecha de inicio</label>
+        <input type="date" id="fDateStart" />
+      </div>
+
+      <div class="field">
+        <label>Fecha de fin (dejar igual para un solo día)</label>
+        <input type="date" id="fDateEnd" />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label><i class="ti ti-clock" aria-hidden="true" style="font-size:13px;vertical-align:-1px"></i> Hora inicio</label>
+          <input type="time" id="fTimeStart" value="09:00" />
+        </div>
+        <div class="field">
+          <label><i class="ti ti-clock" aria-hidden="true" style="font-size:13px;vertical-align:-1px"></i> Hora fin</label>
+          <input type="time" id="fTimeEnd" value="10:00" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Días de la semana en que ocurre</label>
+        <div class="days-picker" id="daysPicker"></div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:5px">Si no seleccionas ninguno, aplica todos los días del rango</div>
+      </div>
+
+      <div class="field">
+        <label>Color personalizado</label>
+        <select id="fColor">
+          <option value="blue">Azul (por defecto)</option>
+          <option value="purple">Morado</option>
+          <option value="green">Verde</option>
+          <option value="amber">Naranja</option>
+          <option value="red">Rojo</option>
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button id="deleteBtn" class="btn-danger" style="display:none"><i class="ti ti-trash" aria-hidden="true"></i> Eliminar</button>
+        <button id="cancelBtn">Cancelar</button>
+        <button id="saveBtn"><i class="ti ti-check" aria-hidden="true"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DAYS_MIN=['D','L','M','X','J','V','S'];
+
+const STATUS={
+  pending:   {label:'Pendiente',   bg:'#E6F1FB',text:'#0C447C',bdr:'#378ADD'},
+  inprogress:{label:'En progreso', bg:'#FAEEDA',text:'#633806',bdr:'#EF9F27'},
+  done:      {label:'Completado',  bg:'#EAF3DE',text:'#27500A',bdr:'#639922'},
+  cancelled: {label:'Cancelado',   bg:'#FCEBEB',text:'#791F1F',bdr:'#E24B4A'},
+  review:    {label:'En revisión', bg:'#EEEDFE',text:'#3C3489',bdr:'#7F77DD'},
+};
+
+const COLORS={
+  blue:  {bg:'#E6F1FB',text:'#0C447C',bdr:'#378ADD'},
+  purple:{bg:'#EEEDFE',text:'#3C3489',bdr:'#7F77DD'},
+  green: {bg:'#EAF3DE',text:'#27500A',bdr:'#639922'},
+  amber: {bg:'#FAEEDA',text:'#633806',bdr:'#EF9F27'},
+  red:   {bg:'#FCEBEB',text:'#791F1F',bdr:'#E24B4A'},
+};
+
+let acts=[];
+try{acts=JSON.parse(localStorage.getItem('cron_v3')||'[]')}catch(e){}
+
+const now=new Date();
+let viewYear=now.getFullYear(),viewMonth=now.getMonth();
+let editId=null;
+
+function saveActs(){try{localStorage.setItem('cron_v3',JSON.stringify(acts))}catch(e){}}
+function toISO(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+function isoToDate(s){return new Date(s+'T12:00:00')}
+
+function actOccursOn(act,iso){
+  const d=isoToDate(iso);
+  const start=act.dateStart, end=act.dateEnd||act.dateStart;
+  if(iso<start||iso>end) return false;
+  if(!act.weekDays||act.weekDays.length===0) return true;
+  return act.weekDays.includes(d.getDay());
+}
+
+function chipColor(act){
+  if(act.color&&act.color!=='blue') return COLORS[act.color]||COLORS.blue;
+  return STATUS[act.status]||STATUS.pending;
+}
+
+function renderStats(){
+  const bar=document.getElementById('statBar');
+  const counts={pending:0,inprogress:0,done:0,cancelled:0,review:0};
+  acts.forEach(a=>counts[a.status]=(counts[a.status]||0)+1);
+  bar.innerHTML=Object.entries(counts).map(([k,v])=>`<div class="stat"><div class="stat-n">${v}</div><div class="stat-l">${STATUS[k].label}</div></div>`).join('');
+}
+
+function renderCalendar(){
+  const hdr=document.getElementById('calHeader');
+  hdr.innerHTML=DAYS_SHORT.map(d=>`<div class="cal-dh">${d}</div>`).join('');
+
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+  document.getElementById('navTitle').textContent=`${MONTHS[viewMonth]} ${viewYear}`;
+  document.getElementById('listTitle').textContent=`Actividades de ${MONTHS[viewMonth]} ${viewYear}`;
+
+  const firstDay=new Date(viewYear,viewMonth,1).getDay();
+  const daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+  const filterStatus=document.getElementById('filterStatus').value;
+
+  for(let i=0;i<firstDay;i++){
+    const e=document.createElement('div');e.className='day-cell empty';grid.appendChild(e);
+  }
+
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=toISO(viewYear,viewMonth,d);
+    const isToday=iso===toISO(now.getFullYear(),now.getMonth(),now.getDate());
+    const cell=document.createElement('div');
+    cell.className='day-cell'+(isToday?' today':'');
+
+    const num=document.createElement('div');num.className='day-num';num.textContent=d;
+    cell.appendChild(num);
+
+    const dayActs=acts.filter(a=>actOccursOn(a,iso)&&(!filterStatus||a.status===filterStatus));
+    const maxShow=3;
+    dayActs.slice(0,maxShow).forEach(act=>{
+      const c=chipColor(act);
+      const chip=document.createElement('div');
+      chip.className='chip';
+      chip.style.background=c.bg;
+      chip.style.color=c.text;
+      chip.style.borderColor=c.bdr;
+      const time=act.timeStart?` ${act.timeStart}`:'';
+      chip.textContent=act.name+time;
+      chip.title=`${act.name}${act.timeStart?' | '+act.timeStart+' - '+act.timeEnd:''}${act.desc?'\n'+act.desc:''}`;
+      chip.onclick=(e)=>{e.stopPropagation();openModal(act.id)};
+      cell.appendChild(chip);
+    });
+    if(dayActs.length>maxShow){
+      const m=document.createElement('div');m.className='more-chip';
+      m.textContent=`+${dayActs.length-maxShow} más`;cell.appendChild(m);
+    }
+    cell.onclick=()=>{
+      openModal();
+      document.getElementById('fDateStart').value=iso;
+      document.getElementById('fDateEnd').value=iso;
+    };
+    grid.appendChild(cell);
+
+    if((d+firstDay)%7===0&&d<daysInMonth){
+      const sep=document.createElement('div');sep.className='week-sep';grid.appendChild(sep);
+    }
+  }
+
+  renderList();
+  renderStats();
+}
+
+function renderList(){
+  const filterStatus=document.getElementById('filterStatus').value;
+  const monthStr=`${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
+  const filtered=acts.filter(a=>{
+    if(filterStatus&&a.status!==filterStatus) return false;
+    return (a.dateStart<=monthStr+'-31')&&((a.dateEnd||a.dateStart)>=monthStr+'-01');
+  });
+  filtered.sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
+
+  const el=document.getElementById('actList');
+  if(!filtered.length){el.innerHTML='<div class="act-list-empty">No hay actividades este mes.</div>';return;}
+
+  el.innerHTML=filtered.map(act=>{
+    const s=STATUS[act.status];
+    const c=chipColor(act);
+    const timeStr=act.timeStart?`${act.timeStart}–${act.timeEnd}`:'Sin hora';
+    const dateRange=act.dateEnd&&act.dateEnd!==act.dateStart
+      ?`${fmtDate(act.dateStart)} → ${fmtDate(act.dateEnd)}`
+      :fmtDate(act.dateStart);
+    const wdStr=act.weekDays&&act.weekDays.length?act.weekDays.map(i=>DAYS_SHORT[i]).join(', '):'Todos los días';
+    return `<div class="act-row">
+      <span class="act-row-dot" style="background:${c.bdr}"></span>
+      <div class="act-row-info">
+        <div class="act-row-name">${act.name}</div>
+        <div class="act-row-meta"><i class="ti ti-calendar" aria-hidden="true" style="font-size:11px;vertical-align:-1px"></i> ${dateRange} &nbsp;·&nbsp; <i class="ti ti-clock" aria-hidden="true" style="font-size:11px;vertical-align:-1px"></i> ${timeStr} &nbsp;·&nbsp; ${wdStr}</div>
+      </div>
+      <span class="act-row-badge" style="background:${s.bg};color:${s.text};border:0.5px solid ${s.bdr}">${s.label}</span>
+      <button class="act-row-btn" onclick="openModal('${act.id}')" aria-label="Editar"><i class="ti ti-edit" aria-hidden="true"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(iso){
+  if(!iso) return '';
+  const d=isoToDate(iso);
+  return d.toLocaleDateString('es-HN',{day:'numeric',month:'short'});
+}
+
+function buildDaysPicker(selected){
+  const el=document.getElementById('daysPicker');
+  el.innerHTML=DAYS_MIN.map((d,i)=>`<button type="button" class="day-btn${selected.includes(i)?' active':''}" data-day="${i}">${d}</button>`).join('');
+  el.querySelectorAll('.day-btn').forEach(btn=>{
+    btn.onclick=()=>{btn.classList.toggle('active')};
+  });
+}
+
+function getSelectedDays(){
+  return [...document.querySelectorAll('#daysPicker .day-btn.active')].map(b=>+b.dataset.day);
+}
+
+function openModal(id){
+  editId=id||null;
+  const act=id?acts.find(a=>a.id===id):null;
+  document.getElementById('modalTitle').textContent=id?'Editar actividad':'Nueva actividad';
+  document.getElementById('fName').value=act?act.name:'';
+  document.getElementById('fDesc').value=act?(act.desc||''):'';
+  document.getElementById('fStatus').value=act?act.status:'pending';
+  document.getElementById('fDateStart').value=act?act.dateStart:toISO(viewYear,viewMonth,1);
+  document.getElementById('fDateEnd').value=act?(act.dateEnd||act.dateStart):toISO(viewYear,viewMonth,1);
+  document.getElementById('fTimeStart').value=act?(act.timeStart||'09:00'):'09:00';
+  document.getElementById('fTimeEnd').value=act?(act.timeEnd||'10:00'):'10:00';
+  document.getElementById('fColor').value=act?(act.color||'blue'):'blue';
+  buildDaysPicker(act?(act.weekDays||[]):[]);
+  document.getElementById('deleteBtn').style.display=id?'':'none';
+  document.getElementById('modalOverlay').style.display='flex';
+  setTimeout(()=>document.getElementById('fName').focus(),50);
+}
+
+function closeModal(){document.getElementById('modalOverlay').style.display='none';}
+
+document.getElementById('closeModal').onclick=closeModal;
+document.getElementById('cancelBtn').onclick=closeModal;
+document.getElementById('modalOverlay').onclick=function(e){if(e.target===this)closeModal();};
+
+document.getElementById('deleteBtn').onclick=()=>{
+  acts=acts.filter(a=>a.id!==editId);saveActs();closeModal();renderCalendar();
+};
+
+document.getElementById('saveBtn').onclick=()=>{
+  const name=document.getElementById('fName').value.trim();
+  if(!name){document.getElementById('fName').focus();return;}
+  const ds=document.getElementById('fDateStart').value;
+  const de=document.getElementById('fDateEnd').value||ds;
+  const act={
+    id:editId||Date.now()+'_'+Math.random().toString(36).slice(2),
+    name,
+    desc:document.getElementById('fDesc').value.trim(),
+    status:document.getElementById('fStatus').value,
+    dateStart:ds,
+    dateEnd:de<ds?ds:de,
+    timeStart:document.getElementById('fTimeStart').value,
+    timeEnd:document.getElementById('fTimeEnd').value,
+    weekDays:getSelectedDays(),
+    color:document.getElementById('fColor').value,
+  };
+  if(editId){const i=acts.findIndex(a=>a.id===editId);acts[i]=act;}
+  else acts.push(act);
+  saveActs();closeModal();renderCalendar();
+};
+
+document.getElementById('addBtn').onclick=()=>openModal();
+document.getElementById('prevBtn').onclick=()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--;}sync();renderCalendar();};
+document.getElementById('nextBtn').onclick=()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++;}sync();renderCalendar();};
+document.getElementById('todayBtn').onclick=()=>{viewYear=now.getFullYear();viewMonth=now.getMonth();sync();renderCalendar();};
+document.getElementById('filterStatus').onchange=renderCalendar;
+
+const ms=document.getElementById('monthSel');
+const ys=document.getElementById('yearSel');
+MONTHS.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=m;ms.appendChild(o);});
+for(let y=2020;y<=2035;y++){const o=document.createElement('option');o.value=y;o.textContent=y;ys.appendChild(o);}
+ms.onchange=()=>{viewMonth=+ms.value;renderCalendar();};
+ys.onchange=()=>{viewYear=+ys.value;renderCalendar();};
+
+function sync(){ms.value=viewMonth;ys.value=viewYear;}
+sync();
+renderCalendar();
+</script>
